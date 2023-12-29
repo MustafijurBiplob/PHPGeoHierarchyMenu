@@ -10,8 +10,19 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM divisions";
-$result = $conn->query($sql);
+// Assuming $userInput is the user-supplied input
+$userInput = $_POST['user_input'];
+
+// Sanitize user input
+$userInput = $conn->real_escape_string($userInput);
+
+// Use prepared statement to prevent SQL injection
+$sql = "SELECT * FROM divisions WHERE some_column = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $userInput); // Assuming some_column is a string, adjust the type accordingly
+$stmt->execute();
+
+$result = $stmt->get_result();
 
 $options = '<option value="">Select Division</option>';
 while ($row = $result->fetch_assoc()) {
@@ -19,5 +30,7 @@ while ($row = $result->fetch_assoc()) {
 }
 
 echo $options;
+
+$stmt->close();
 $conn->close();
 ?>
