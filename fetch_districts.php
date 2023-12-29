@@ -5,40 +5,40 @@ $password = ""; // Enter your MySQL password here
 $dbname = "blood";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['division_id'])) {
-    $conn = new mysqli($servername, $username, $password, $dbname);
+    try {
+        $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
+        // Sanitize input
+        $divisionId = filter_var($_POST['division_id'], FILTER_SANITIZE_NUMBER_INT);
 
-    // Sanitize input
-    $divisionId = $conn->real_escape_string($_POST['division_id']);
+        // Use prepared statement to prevent SQL injection
+        $sql = "SELECT * FROM districts WHERE division_id = :divisionId";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':divisionId', $divisionId, PDO::PARAM_INT);
+        $stmt->execute();
 
-    // Use prepared statement to prevent SQL injection
-    $sql = "SELECT * FROM districts WHERE division_id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $divisionId);
-    $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $result = $stmt->get_result();
+        $options = '<option value="">Select District</option>';
 
-    $options = '<option value="">Select District</option>';
-    
-    // Store district IDs to ensure uniqueness
-    $selectedDistricts = array();
+        // Store district IDs to ensure uniqueness
+        $selectedDistricts = array();
 
-    while ($row = $result->fetch_assoc()) {
-        // Check against the array to ensure uniqueness
-        if (!in_array($row['id'], $selectedDistricts)) {
-            $options .= '<option value="' . $row['id'] . '">' . $row['district_name'] . '</option>';
-            $selectedDistricts[] = $row['id'];
+        foreach ($result as $row) {
+            // Check against the array to ensure uniqueness
+            if (!in_array($row['id'], $selectedDistricts)) {
+                $options .= '<option value="' . $row['id'] . '">' . $row['district_name'] . '</option>';
+                $selectedDistricts[] = $row['id'];
+            }
         }
+
+        echo $options;
+    } catch (PDOException $e) {
+        echo "Connection failed: " . $e->getMessage();
+    } finally {
+        $conn = null; // Close the connection
     }
-
-    echo $options;
-
-    $stmt->close();
-    $conn->close();
 } else {
     echo "Invalid request";
 }
