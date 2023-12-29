@@ -1,47 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dropdowns with Bootstrap</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Fetch districts based on selected division
-            $('#division').change(function() {
-                var divisionId = $(this).val();
-
-                $.ajax({
-                    type: "POST",
-                    url: "fetch_districts.php",
-                    data: { division_id: divisionId },
-                    success: function(response) {
-                        $('#district').html(response);
-                        $('#upazila').html('<option value="">Select Upazila</option>');
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(xhr.responseText);
-                    }
-                });
-            });
-
-            // Fetch upazilas based on selected district
-            $('#district').change(function() {
-                var districtId = $(this).val();
-
-                $.ajax({
-                    type: "POST",
-                    url: "fetch_upazilas.php",
-                    data: { district_id: districtId },
-                    success: function(response) {
-                        $('#upazila').html(response);
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(xhr.responseText);
-                    }
-                });
-            });
-        });
-    </script>
+    <script src="js/dropdowns.js"></script>
 </head>
 <body>
     <div class="container mt-5">
@@ -70,16 +35,7 @@
     <script>
         // Fetch divisions on page load
         $(document).ready(function() {
-            $.ajax({
-                type: "GET",
-                url: "fetch_divisions.php",
-                success: function(response) {
-                    $('#division').html(response);
-                },
-                error: function(xhr, status, error) {
-                    console.error(xhr.responseText);
-                }
-            });
+            fetchDivisions();
         });
     </script>
 
